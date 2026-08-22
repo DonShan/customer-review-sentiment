@@ -2,6 +2,8 @@
 
 End-to-end AI application that classifies e-commerce and food-delivery customer reviews as **positive** or **negative**, with a web UI, JSON API, Docker image, and Azure deployment instructions.
 
+**Public repository:** https://github.com/DonShan/customer-review-sentiment
+
 ---
 
 ## 1. Problem Statement
@@ -255,11 +257,11 @@ Push to Docker Hub (assignment fallback when Azure is not available):
 
 ```bash
 docker login
-docker tag review-sentiment:latest yourusername/review-sentiment:latest
-docker push yourusername/review-sentiment:latest
+docker tag review-sentiment:latest DonShan/review-sentiment:latest
+docker push DonShan/review-sentiment:latest
 ```
 
-Replace `yourusername` with your Docker Hub account. After the push, record the image URL in this README (for example `docker.io/yourusername/review-sentiment:latest`).
+The image is built locally as `review-sentiment:latest`. After you sign in to Docker Hub, push and record the image URL (for example `docker.io/DonShan/review-sentiment:latest`).
 
 ---
 
