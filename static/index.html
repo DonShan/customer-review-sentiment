@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Review Sentiment Analyzer</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main class="card">
+      <p class="eyebrow">E-commerce &amp; food-delivery</p>
+      <h1>Customer Review Sentiment</h1>
+      <p class="lede">
+        Paste a customer review. The model classifies it as
+        <strong>positive</strong> or <strong>negative</strong> and returns a
+        confidence score.
+      </p>
+
+      <form id="review-form">
+        <label for="review">Review text</label>
+        <textarea
+          id="review"
+          name="review"
+          rows="6"
+          required
+          placeholder="The pasta was delicious and arrived hot. Will order again!"
+        ></textarea>
+        <div class="actions">
+          <button type="submit">Analyze sentiment</button>
+          <button type="button" id="sample-btn" class="secondary">
+            Use sample review
+          </button>
+        </div>
+      </form>
+
+      <section id="result" class="result hidden" aria-live="polite"></section>
+      <p class="hint">
+        API docs:
+        <a href="/docs">/docs</a>
+        &middot; Health:
+        <a href="/health">/health</a>
+      </p>
+    </main>
+
+    <script>
+      const form = document.getElementById("review-form");
+      const textarea = document.getElementById("review");
+      const result = document.getElementById("result");
+      const sampleBtn = document.getElementById("sample-btn");
+
+      const samples = [
+        "The pasta was delicious and arrived hot. Will order again!",
+        "Terrible packaging. The food was cold and the fries were soggy.",
+        "Quick support response and a replacement was sent the next day.",
+      ];
+
+      sampleBtn.addEventListener("click", () => {
+        textarea.value = samples[Math.floor(Math.random() * samples.length)];
+      });
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const text = textarea.value.trim();
+        if (!text) return;
+
+        result.classList.remove("hidden", "positive", "negative", "error");
+        result.innerHTML = "<p>Analyzing…</p>";
+
+        try {
+          const response = await fetch("/predict", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text }),
+          });
+          const data = await response.json();
+          if (!response.ok) {
+            throw new Error(data.detail || "Prediction failed");
+          }
+
+          result.classList.add(data.sentiment);
+          const pct = (n) => Math.round(n * 100) + "%";
+          result.innerHTML = `
+            <p class="label">${data.sentiment}</p>
+            <p>Confidence: <strong>${pct(data.confidence)}</strong></p>
+            <p class="probs">
+              Negative ${pct(data.probabilities.negative)}
+              &middot;
+              Positive ${pct(data.probabilities.positive)}
+            </p>
+          `;
+        } catch (err) {
+          result.classList.add("error");
+          result.innerHTML = `<p>${err.message}</p>`;
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,29 @@
+### Single review
+POST http://127.0.0.1:8000/predict
+Content-Type: application/json
+
+{
+  "text": "The pasta was delicious and arrived hot. Will order again!"
+}
+
+### Negative review
+POST http://127.0.0.1:8000/predict
+Content-Type: application/json
+
+{
+  "text": "Terrible packaging. The food was cold and the fries were soggy."
+}
+
+### Batch
+POST http://127.0.0.1:8000/predict/batch
+Content-Type: application/json
+
+{
+  "texts": [
+    "Loved the spicy ramen. Fast delivery and the noodles were perfect.",
+    "Wrong order twice in a row. Refund took forever."
+  ]
+}
+
+### Health
+GET http://127.0.0.1:8000/health

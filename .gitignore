@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+.venv/
+env/
+ENV/
+
+# Training / cache
+.cache/
+hf_cache/
+*.csv
+!data/sample_reviews.csv
+
+# Large raw datasets
+data/raw/
+data/*.parquet
+
+# IDE
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# Secrets / env
+.env
+.env.*
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Coverage / pytest
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Logs
+*.log

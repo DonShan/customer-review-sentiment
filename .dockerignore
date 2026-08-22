@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.git
+.gitignore
+.DS_Store
+.env
+hf_cache/
+.cache/
+*.md
+!README.md
+data/*.csv
+!data/sample_reviews.csv
+.pytest_cache/
