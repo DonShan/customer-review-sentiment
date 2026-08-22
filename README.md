@@ -150,7 +150,7 @@ More examples: [`sample_requests.http`](sample_requests.http).
 
 ## 9. Deployment Details
 
-**Current status:** no Azure subscription was available during development. The assignment fallback is used: the app is Dockerized and can be pushed to Docker Hub, then later deployed to Azure.
+**Current status:** the Docker image is on Docker Hub as [`madushansenavirathna/review-sentiment:latest`](https://hub.docker.com/r/madushansenavirathna/review-sentiment). Azure App Service deploy runs after `az login`.
 
 ### Target Azure services
 
@@ -179,7 +179,7 @@ az webapp create \
   --resource-group rg-review-sentiment \
   --plan plan-review-sentiment \
   --name APP_NAME \
-  --deployment-container-image-name yourusername/review-sentiment:latest
+  --deployment-container-image-name madushansenavirathna/review-sentiment:latest
 
 az webapp config appsettings set \
   --resource-group rg-review-sentiment \
@@ -257,11 +257,11 @@ Push to Docker Hub (assignment fallback when Azure is not available):
 
 ```bash
 docker login
-docker tag review-sentiment:latest DonShan/review-sentiment:latest
-docker push DonShan/review-sentiment:latest
+docker tag review-sentiment:latest madushansenavirathna/review-sentiment:latest
+docker push madushansenavirathna/review-sentiment:latest
 ```
 
-The image is built locally as `review-sentiment:latest`. After you sign in to Docker Hub, push and record the image URL (for example `docker.io/DonShan/review-sentiment:latest`).
+Published image: [`docker.io/madushansenavirathna/review-sentiment:latest`](https://hub.docker.com/r/madushansenavirathna/review-sentiment).
 
 ---
 
