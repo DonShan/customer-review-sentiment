@@ -1,98 +1,100 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Review Sentiment Analyzer</title>
-    <link rel="stylesheet" href="/static/styles.css" />
-  </head>
-  <body>
-    <main class="card">
-      <p class="eyebrow">E-commerce &amp; food-delivery</p>
-      <h1>Customer Review Sentiment</h1>
-      <p class="lede">
-        Paste a customer review. The model classifies it as
-        <strong>positive</strong> or <strong>negative</strong> and returns a
-        confidence score.
-      </p>
-
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f7f7f2"><meta name="description" content="Analyze customer reviews with a fast sentiment model.">
+  <title>Signal — Review Sentiment</title>
+  <link rel="stylesheet" href="/static/styles.css"><link rel="stylesheet" href="/static/live.css"><script src="/static/app.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="Signal home"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>Signal</a>
+    <nav aria-label="Utility navigation"><a href="/docs">API docs</a><a class="status-link" href="/health"><span class="status-dot"></span>System live</a></nav>
+  </header>
+  <main>
+    <section class="intro" aria-labelledby="page-title">
+      <p class="eyebrow"><span></span>Customer intelligence</p>
+      <h1 id="page-title">Turn every review<br>into a clear signal.</h1>
+      <p class="intro-copy">Understand customer sentiment in seconds. Paste a review and our lightweight AI model will identify the tone and confidence behind it.</p>
+      <div class="stats" aria-label="Model highlights">
+        <div><strong>89.65%</strong><span>test accuracy</span></div><div><strong>&lt; 1 sec</strong><span>analysis time</span></div><div><strong>20k</strong><span>reviews trained</span></div>
+      </div>
+    </section>
+    <section class="analyzer" aria-labelledby="analyzer-title">
+      <div class="panel-heading"><div><p class="step">Sentiment analyzer</p><h2 id="analyzer-title">What are your customers saying?</h2></div><span class="model-badge">AI powered</span></div>
+      <div class="mode-tabs" role="tablist" aria-label="Analysis mode">
+        <button id="single-tab" class="active" type="button" role="tab" aria-selected="true" aria-controls="single-panel">Single review</button>
+        <button id="batch-tab" type="button" role="tab" aria-selected="false" aria-controls="batch-panel">Batch analysis</button>
+      </div>
+      <div id="single-panel" role="tabpanel" aria-labelledby="single-tab">
       <form id="review-form">
-        <label for="review">Review text</label>
-        <textarea
-          id="review"
-          name="review"
-          rows="6"
-          required
-          placeholder="The pasta was delicious and arrived hot. Will order again!"
-        ></textarea>
-        <div class="actions">
-          <button type="submit">Analyze sentiment</button>
-          <button type="button" id="sample-btn" class="secondary">
-            Use sample review
-          </button>
+        <div class="field-heading"><label for="review">Customer review</label><span id="character-count">0 / 8,000</span></div>
+        <div class="textarea-wrap">
+          <textarea id="review" name="review" rows="7" maxlength="8000" required aria-describedby="review-help" placeholder="Paste a product, restaurant, or delivery review here…"></textarea>
+          <button class="clear-button" id="clear-btn" type="button" aria-label="Clear review" hidden>Clear</button>
         </div>
+        <p id="review-help" class="helper">Try a sample</p>
+        <div class="samples" aria-label="Sample reviews"><button type="button" data-sample="positive">Great product</button><button type="button" data-sample="negative">Poor delivery</button><button type="button" data-sample="support">Helpful support</button></div>
+        <button id="submit-btn" class="submit-button" type="submit"><span>Analyze sentiment</span><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg></button>
       </form>
-
-      <section id="result" class="result hidden" aria-live="polite"></section>
-      <p class="hint">
-        API docs:
-        <a href="/docs">/docs</a>
-        &middot; Health:
-        <a href="/health">/health</a>
-      </p>
-    </main>
-
-    <script>
-      const form = document.getElementById("review-form");
-      const textarea = document.getElementById("review");
-      const result = document.getElementById("result");
-      const sampleBtn = document.getElementById("sample-btn");
-
-      const samples = [
-        "The pasta was delicious and arrived hot. Will order again!",
-        "Terrible packaging. The food was cold and the fries were soggy.",
-        "Quick support response and a replacement was sent the next day.",
-      ];
-
-      sampleBtn.addEventListener("click", () => {
-        textarea.value = samples[Math.floor(Math.random() * samples.length)];
-      });
-
-      form.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        const text = textarea.value.trim();
-        if (!text) return;
-
-        result.classList.remove("hidden", "positive", "negative", "error");
-        result.innerHTML = "<p>Analyzing…</p>";
-
-        try {
-          const response = await fetch("/predict", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ text }),
-          });
-          const data = await response.json();
-          if (!response.ok) {
-            throw new Error(data.detail || "Prediction failed");
-          }
-
-          result.classList.add(data.sentiment);
-          const pct = (n) => Math.round(n * 100) + "%";
-          result.innerHTML = `
-            <p class="label">${data.sentiment}</p>
-            <p>Confidence: <strong>${pct(data.confidence)}</strong></p>
-            <p class="probs">
-              Negative ${pct(data.probabilities.negative)}
-              &middot;
-              Positive ${pct(data.probabilities.positive)}
-            </p>
-          `;
-        } catch (err) {
-          result.classList.add("error");
-          result.innerHTML = `<p>${err.message}</p>`;
-        }
-      });
-    </script>
-  </body>
+      <section id="result" class="result" aria-live="polite" hidden>
+        <div class="result-topline"><span id="result-icon" class="result-icon"></span><div><p class="result-kicker">Detected sentiment</p><h3 id="result-label"></h3></div><strong id="confidence-value" class="confidence-value"></strong></div>
+        <p id="result-summary" class="result-summary"></p>
+        <div class="feedback-box">
+          <span class="feedback-label">Recommended action</span>
+          <p id="review-feedback"></p>
+        </div>
+        <div class="probability-grid">
+          <div><div class="bar-label"><span>Positive</span><strong id="positive-value"></strong></div><div class="bar-track"><span id="positive-bar" class="bar positive-bar"></span></div></div>
+          <div><div class="bar-label"><span>Negative</span><strong id="negative-value"></strong></div><div class="bar-track"><span id="negative-bar" class="bar negative-bar"></span></div></div>
+        </div>
+      </section>
+      <section id="error" class="error-message" role="alert" hidden><strong>We couldn’t analyze that review.</strong><span id="error-text">Please try again in a moment.</span></section>
+      </div>
+      <div id="batch-panel" role="tabpanel" aria-labelledby="batch-tab" hidden>
+        <div class="batch-intro">
+          <p>Analyze up to 50 reviews at once—one review per line.</p>
+          <button id="load-dataset" class="text-button" type="button">Load sample dataset</button>
+        </div>
+        <form id="batch-form">
+          <div class="field-heading"><label for="batch-reviews">Review list</label><span id="review-count">0 / 50 reviews</span></div>
+          <textarea id="batch-reviews" rows="8" placeholder="The delivery was fast and easy.&#10;The package arrived damaged.&#10;Support resolved my problem quickly."></textarea>
+          <button id="batch-submit" class="submit-button" type="submit"><span>Analyze all reviews</span><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg></button>
+        </form>
+        <section id="batch-results" class="batch-results" aria-live="polite" hidden>
+          <div class="summary-heading"><div><p class="result-kicker">Batch overview</p><h3><span id="total-count">0</span> reviews analyzed</h3></div><button id="export-results" class="export-button" type="button">Export CSV</button></div>
+          <div class="summary-cards">
+            <div class="summary-card positive-card"><span>Positive</span><strong id="positive-count">0</strong><small id="positive-percent">0%</small></div>
+            <div class="summary-card negative-card"><span>Negative</span><strong id="negative-count">0</strong><small id="negative-percent">0%</small></div>
+            <div class="summary-card"><span>Avg confidence</span><strong id="average-confidence">0%</strong><small>Across results</small></div>
+          </div>
+          <div class="distribution"><span id="distribution-positive"></span><span id="distribution-negative"></span></div>
+          <div id="batch-feedback" class="batch-feedback"><span class="feedback-label">Customer experience insight</span><p id="batch-feedback-text"></p></div>
+          <div class="result-tools"><p>Review results</p><div class="filters" aria-label="Filter results"><button class="active" type="button" data-filter="all">All</button><button type="button" data-filter="positive">Positive</button><button type="button" data-filter="negative">Negative</button></div></div>
+          <div id="batch-list" class="batch-list"></div>
+        </section>
+        <section id="batch-error" class="error-message" role="alert" hidden><strong>Batch analysis failed.</strong><span id="batch-error-text"></span></section>
+      </div>
+    </section>
+  </main>
+  <section class="existing-reviews" aria-labelledby="existing-title">
+    <div class="existing-heading">
+      <div><p class="eyebrow"><span></span>Dataset validation</p><h2 id="existing-title">Existing reviews &amp; predictions</h2><p>All bundled sample reviews compared with the model’s prediction.</p></div>
+      <div class="accuracy-chip"><span>Sample agreement</span><strong id="sample-accuracy">—</strong></div>
+    </div>
+    <div class="existing-toolbar">
+      <div class="live-status"><span class="live-pulse" aria-hidden="true"></span><span><strong>Live predictions</strong><small id="existing-status">Loading review predictions…</small><small id="last-updated"></small></span></div>
+      <button id="refresh-predictions" class="refresh-button" type="button" aria-label="Refresh predictions"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M16 7a7 7 0 1 0 1 5M16 3v4h-4"/></svg><span>Refresh</span></button>
+      <div class="filters" aria-label="Filter existing reviews"><button class="active" type="button" data-existing-filter="all">All</button><button type="button" data-existing-filter="correct">Matched</button><button type="button" data-existing-filter="incorrect">Mismatched</button></div>
+    </div>
+    <div class="review-table-wrap">
+      <table class="review-table">
+        <thead><tr><th>#</th><th>Customer review</th><th>Dataset label</th><th>Prediction</th><th>Confidence</th><th>Result</th></tr></thead>
+        <tbody id="existing-review-list"><tr><td colspan="6" class="loading-cell">Analyzing the sample dataset…</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+  <footer><span>Built for faster customer decisions.</span><span>TF-IDF + Logistic Regression</span></footer>
+  <div id="toast-region" class="toast-region" aria-live="polite" aria-atomic="true"></div>
+</body>
 </html>

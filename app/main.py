@@ -16,6 +16,7 @@ from app.schemas import (
 
 ROOT = Path(__file__).resolve().parents[1]
 STATIC_DIR = ROOT / "static"
+SAMPLE_DATA = ROOT / "data" / "sample_reviews.csv"
 
 
 @asynccontextmanager
@@ -44,6 +45,13 @@ def index():
     if not index_path.exists():
         raise HTTPException(status_code=404, detail="Web UI not found.")
     return FileResponse(index_path)
+
+
+@app.get("/sample-data", include_in_schema=False)
+def sample_data():
+    if not SAMPLE_DATA.exists():
+        raise HTTPException(status_code=404, detail="Sample dataset not found.")
+    return FileResponse(SAMPLE_DATA, media_type="text/csv", filename="sample_reviews.csv")
 
 
 @app.get("/health", response_model=HealthResponse)
