@@ -150,7 +150,20 @@ More examples: [`sample_requests.http`](sample_requests.http).
 
 ## 9. Deployment Details
 
-**Current status:** the Docker image is on Docker Hub as [`madushansenavirathna/review-sentiment:latest`](https://hub.docker.com/r/madushansenavirathna/review-sentiment). Azure App Service deploy runs after `az login`.
+**Current status:** deployed to Azure App Service (Linux container, West US 2, B1).
+
+| Item | Value |
+|------|--------|
+| Live UI | https://review-sentiment-msdjshan.azurewebsites.net/ |
+| API docs | https://review-sentiment-msdjshan.azurewebsites.net/docs |
+| Health | https://review-sentiment-msdjshan.azurewebsites.net/health |
+| Resource group | `rg-review-sentiment` |
+| App Service plan | `plan-review-sentiment-westus2` (B1 Linux) |
+| Web app | `review-sentiment-msdjshan` |
+| Image | `madushansenavirathna/review-sentiment:latest` (`linux/amd64`) |
+| Azure account | `msdjshan47@gmail.com` |
+
+The Docker Hub repository is private (plan limits). App Service is configured with registry credentials and `WEBSITES_PORT=8000` so it can pull the image.
 
 ### Target Azure services
 
@@ -162,33 +175,41 @@ More examples: [`sample_requests.http`](sample_requests.http).
 
 ### Deploy from Docker Hub to Azure App Service
 
-Replace placeholders (`RESOURCE_GROUP`, `APP_NAME`, `yourusername`).
-
 ```bash
 az login
 
-az group create --name rg-review-sentiment --location eastus
+az group create --name rg-review-sentiment --location westus2
 
 az appservice plan create \
-  --name plan-review-sentiment \
+  --name plan-review-sentiment-westus2 \
   --resource-group rg-review-sentiment \
+  --location westus2 \
   --is-linux \
   --sku B1
 
 az webapp create \
   --resource-group rg-review-sentiment \
-  --plan plan-review-sentiment \
-  --name APP_NAME \
+  --plan plan-review-sentiment-westus2 \
+  --name review-sentiment-msdjshan \
   --deployment-container-image-name madushansenavirathna/review-sentiment:latest
 
 az webapp config appsettings set \
   --resource-group rg-review-sentiment \
-  --name APP_NAME \
+  --name review-sentiment-msdjshan \
   --settings WEBSITES_PORT=8000
 
-# Live URL after deploy:
-# https://APP_NAME.azurewebsites.net/
-# https://APP_NAME.azurewebsites.net/docs
+# Live:
+# https://review-sentiment-msdjshan.azurewebsites.net/
+# https://review-sentiment-msdjshan.azurewebsites.net/docs
+```
+
+East US B1 was rejected on this free subscription (0 VM quota). West US 2 succeeded.
+
+If SCM log download (`az webapp log download`) returns **504 Gateway Timeout**, the site is usually still starting or failing to pull the image. Check container logs instead:
+
+```bash
+az rest --method POST \
+  --uri "/subscriptions/<sub-id>/resourceGroups/rg-review-sentiment/providers/Microsoft.Web/sites/review-sentiment-msdjshan/containerlogs?api-version=2023-12-01"
 ```
 
 If you use Azure Container Registry instead of Docker Hub:
@@ -200,7 +221,7 @@ docker tag review-sentiment:latest acrReviewSentiment.azurecr.io/review-sentimen
 docker push acrReviewSentiment.azurecr.io/review-sentiment:latest
 ```
 
-Update this section with the live `*.azurewebsites.net` URL after the first successful deploy.
+Live app: https://review-sentiment-msdjshan.azurewebsites.net/
 
 ## 10. API / Web Application Usage
 
