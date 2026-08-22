@@ -4,7 +4,8 @@
 
 End-to-end AI application that classifies e-commerce and food-delivery customer reviews as **positive** or **negative**. It includes the **Signal** web UI, a JSON API, a Docker image, and a live Azure App Service deployment.
 
-**Public repository:** https://github.com/DonShan/customer-review-sentiment
+**Public repository:** https://github.com/DonShan/customer-review-sentiment  
+**Full documentation:** [DOCUMENTATION.md](DOCUMENTATION.md)
 
 | Link | URL |
 |------|-----|
@@ -295,6 +296,7 @@ Published image: `docker.io/madushansenavirathna/review-sentiment:latest`.
 ```
 customer-review-sentiment/
 ├── README.md
+├── DOCUMENTATION.md
 ├── requirements.txt
 ├── requirements-train.txt
 ├── Dockerfile
