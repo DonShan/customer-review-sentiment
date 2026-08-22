@@ -1,8 +1,17 @@
 # Customer Review Sentiment AI Application
 
-End-to-end AI application that classifies e-commerce and food-delivery customer reviews as **positive** or **negative**, with a web UI, JSON API, Docker image, and Azure deployment instructions.
+End-to-end AI application that classifies e-commerce and food-delivery customer reviews as **positive** or **negative**. It includes the **Signal** web UI, a JSON API, a Docker image, and a live Azure App Service deployment.
 
-**Public repository:** https://github.com/DonShan/customer-review-sentiment
+**Public repository:** https://github.com/DonShan/customer-review-sentiment  
+**Live app:** https://review-sentiment-msdjshan.azurewebsites.net/
+
+| Link | URL |
+|------|-----|
+| Web UI (Signal) | https://review-sentiment-msdjshan.azurewebsites.net/ |
+| Swagger API docs | https://review-sentiment-msdjshan.azurewebsites.net/docs |
+| Health check | https://review-sentiment-msdjshan.azurewebsites.net/health |
+| Sample dataset | https://review-sentiment-msdjshan.azurewebsites.net/sample-data |
+| Docker image | `madushansenavirathna/review-sentiment:latest` (`linux/amd64`) |
 
 ---
 
@@ -19,16 +28,17 @@ E-commerce and food-delivery businesses struggle to analyze large volumes of cus
 | Marketing teams | Measure campaign or menu-change sentiment |
 | Marketplace sellers | Triage Amazon-style product feedback at scale |
 
-A user pastes a review into the web form (or sends JSON to `/predict`) and receives a sentiment label plus a confidence score in under a second.
+Users analyze one review or a batch (up to 50) in the Signal UI, or call `/predict` and `/predict/batch` from another system.
 
 ## 3. Solution Overview
 
-The solution is a binary text classifier wrapped in a FastAPI application:
+The solution is a binary text classifier wrapped in a FastAPI application branded as **Signal**:
 
 1. Review text is cleaned (lowercase, strip HTML/URLs).
 2. A TF-IDF vectorizer turns the text into n-gram features.
 3. Logistic Regression predicts **negative** or **positive** with class probabilities.
-4. Results are returned through a web UI at `/` and a REST API at `/predict`.
+4. The Signal UI shows the label, confidence, recommended action, and probability bars.
+5. Batch mode analyzes many reviews, summarizes counts, and can export CSV.
 
 On a held-out test set of 4,000 Amazon reviews the model reached **89.65% accuracy** (see [section 5](#5-aiml-approach)).
 
@@ -45,7 +55,7 @@ On a held-out test set of 4,000 Amazon reviews the model reached **89.65% accura
 | Labels | `0` = negative, `1` = positive |
 | Fields used | `title` + `content` concatenated as input text |
 
-`data/sample_reviews.csv` is a small hand-written food-delivery sample used only for UI/API demos. It is **not** the training set. See [`data/README.md`](data/README.md).
+`data/sample_reviews.csv` is a small hand-written food-delivery sample used in the UI (Load sample dataset) and `/sample-data`. It is **not** the training set. See [`data/README.md`](data/README.md).
 
 Retrain with:
 
@@ -80,24 +90,25 @@ TF-IDF + Logistic Regression is intentionally lightweight so the app starts quic
 ## 6. Application Architecture
 
 ```text
-Browser / Postman / Swagger
+Browser (Signal UI) / Postman / Swagger
             |
             v
-   +----------------------+
-   |  FastAPI (one process)
-   |  GET  /          web UI
+   +--------------------------------+
+   |  FastAPI (one process)         |
+   |  GET  /                 Signal UI
+   |  GET  /sample-data      demo CSV
    |  GET  /health
    |  POST /predict
    |  POST /predict/batch
    |  GET  /docs
-   +----------------------+
+   +--------------------------------+
             |
             v
    TF-IDF vectorizer + Logistic Regression
    (models/*.joblib loaded at startup)
 ```
 
-Docker (and later Azure App Service) runs the same image: Uvicorn serving `app.main:app` on port 8000.
+Docker and Azure App Service run the same `linux/amd64` image: Uvicorn serving `app.main:app` on port 8000.
 
 ## 7. Technology Stack
 
@@ -107,10 +118,10 @@ Docker (and later Azure App Service) runs the same image: Uvicorn serving `app.m
 | API | FastAPI, Uvicorn, Pydantic |
 | ML | scikit-learn, joblib, pandas, numpy |
 | Training data | Hugging Face `datasets` (`fancyzhx/amazon_polarity`) |
-| UI | Static HTML/CSS/JS served by FastAPI |
-| Container | Docker (Python 3.11-slim) |
-| Cloud (when available) | Microsoft Azure App Service (Linux container) or Azure Container Apps |
-| Registry | Docker Hub (or Azure Container Registry) |
+| UI | Signal — static HTML/CSS/JS (`index.html`, `styles.css`, `live.css`, `app.js`) |
+| Container | Docker (`python:3.11-slim`, `linux/amd64`) |
+| Cloud | Microsoft Azure App Service (Linux container, West US 2, B1) |
+| Registry | Docker Hub (`madushansenavirathna/review-sentiment`) |
 
 Runtime dependencies: [`requirements.txt`](requirements.txt). Training extras: [`requirements-train.txt`](requirements-train.txt).
 
@@ -137,6 +148,7 @@ Open:
 - Web UI: <http://127.0.0.1:8000/>
 - Swagger: <http://127.0.0.1:8000/docs>
 - Health: <http://127.0.0.1:8000/health>
+- Sample CSV: <http://127.0.0.1:8000/sample-data>
 
 Example request:
 
@@ -150,7 +162,7 @@ More examples: [`sample_requests.http`](sample_requests.http).
 
 ## 9. Deployment Details
 
-**Current status:** deployed to Azure App Service (Linux container, West US 2, B1).
+**Current status:** live on Azure App Service. Latest Signal UI image was rebuilt and pushed on 22 Aug 2026.
 
 | Item | Value |
 |------|--------|
@@ -163,44 +175,43 @@ More examples: [`sample_requests.http`](sample_requests.http).
 | Image | `madushansenavirathna/review-sentiment:latest` (`linux/amd64`) |
 | Azure account | `msdjshan47@gmail.com` |
 
-The Docker Hub repository is private (plan limits). App Service is configured with registry credentials and `WEBSITES_PORT=8000` so it can pull the image.
+The Docker Hub repository is private (plan limits). App Service uses registry credentials and `WEBSITES_PORT=8000` so it can pull the image.
 
 ### Target Azure services
 
 | Service | Role |
 |---------|------|
-| Azure App Service (Linux, container) | Host the API + UI |
-| Azure Container Registry (optional) | Private image instead of Docker Hub |
-| Application Insights (optional) | Request logs and health |
+| Azure App Service (Linux, container) | Host the Signal UI + API |
+| Docker Hub | Store the `linux/amd64` image |
+| Azure Container Registry (optional) | Private alternative to Docker Hub |
 
-### Deploy from Docker Hub to Azure App Service
+### Deploy / update the live site
 
 ```bash
 az login
 
+# First-time create (already done)
 az group create --name rg-review-sentiment --location westus2
-
 az appservice plan create \
   --name plan-review-sentiment-westus2 \
   --resource-group rg-review-sentiment \
   --location westus2 \
   --is-linux \
   --sku B1
-
 az webapp create \
   --resource-group rg-review-sentiment \
   --plan plan-review-sentiment-westus2 \
   --name review-sentiment-msdjshan \
   --deployment-container-image-name madushansenavirathna/review-sentiment:latest
-
 az webapp config appsettings set \
   --resource-group rg-review-sentiment \
   --name review-sentiment-msdjshan \
   --settings WEBSITES_PORT=8000
 
-# Live:
-# https://review-sentiment-msdjshan.azurewebsites.net/
-# https://review-sentiment-msdjshan.azurewebsites.net/docs
+# Update after code changes
+docker build --platform linux/amd64 -t madushansenavirathna/review-sentiment:latest .
+docker push madushansenavirathna/review-sentiment:latest
+az webapp restart --name review-sentiment-msdjshan --resource-group rg-review-sentiment
 ```
 
 East US B1 was rejected on this free subscription (0 VM quota). West US 2 succeeded.
@@ -212,25 +223,15 @@ az rest --method POST \
   --uri "/subscriptions/<sub-id>/resourceGroups/rg-review-sentiment/providers/Microsoft.Web/sites/review-sentiment-msdjshan/containerlogs?api-version=2023-12-01"
 ```
 
-If you use Azure Container Registry instead of Docker Hub:
-
-```bash
-az acr create --resource-group rg-review-sentiment --name acrReviewSentiment --sku Basic
-az acr login --name acrReviewSentiment
-docker tag review-sentiment:latest acrReviewSentiment.azurecr.io/review-sentiment:latest
-docker push acrReviewSentiment.azurecr.io/review-sentiment:latest
-```
-
-Live app: https://review-sentiment-msdjshan.azurewebsites.net/
-
 ## 10. API / Web Application Usage
 
-### Web UI
+### Signal web UI
 
-1. Open `/`.
-2. Paste a review (or click **Use sample review**).
-3. Click **Analyze sentiment**.
-4. The page shows the label (positive/negative), confidence, and class probabilities.
+1. Open https://review-sentiment-msdjshan.azurewebsites.net/ (or `/` locally).
+2. **Single review:** paste text or click a sample (Great product / Poor delivery / Helpful support), then **Analyze sentiment**.
+3. The page shows sentiment, confidence, a recommended action, and probability bars.
+4. **Batch analysis:** switch tabs, paste one review per line (up to 50), or **Load sample dataset**.
+5. Review the summary cards, filter rows, and **Export CSV** if needed.
 
 ### REST API
 
@@ -249,10 +250,10 @@ Response:
 ```json
 {
   "sentiment": "positive",
-  "confidence": 0.94,
+  "confidence": 0.7691,
   "probabilities": {
-    "negative": 0.06,
-    "positive": 0.94
+    "negative": 0.2309,
+    "positive": 0.7691
   }
 }
 ```
@@ -261,20 +262,22 @@ Response:
 
 **`GET /health`** — `{ "status": "ok", "model_loaded": true }`.
 
+**`GET /sample-data`** — downloads `sample_reviews.csv`.
+
 Interactive docs: `/docs` (Swagger UI).
 
 ## 11. Docker Instructions
 
-Build and run locally:
+Build for Azure-compatible **linux/amd64** (required on Apple Silicon):
 
 ```bash
-docker build -t review-sentiment:latest .
+docker build --platform linux/amd64 -t review-sentiment:latest .
 docker run --rm -p 8000:8000 review-sentiment:latest
 ```
 
 Then open <http://127.0.0.1:8000/>.
 
-Push to Docker Hub (assignment fallback when Azure is not available):
+Push to Docker Hub:
 
 ```bash
 docker login
@@ -282,7 +285,7 @@ docker tag review-sentiment:latest madushansenavirathna/review-sentiment:latest
 docker push madushansenavirathna/review-sentiment:latest
 ```
 
-Published image: [`docker.io/madushansenavirathna/review-sentiment:latest`](https://hub.docker.com/r/madushansenavirathna/review-sentiment).
+Published image: `docker.io/madushansenavirathna/review-sentiment:latest`.
 
 ---
 
@@ -302,7 +305,9 @@ customer-review-sentiment/
 │   └── schemas.py
 ├── static/
 │   ├── index.html
-│   └── styles.css
+│   ├── styles.css
+│   ├── live.css
+│   └── app.js
 ├── train/
 │   └── train_model.py
 ├── models/
