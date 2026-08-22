@@ -1,13 +1,14 @@
 # Customer Review Sentiment AI Application
 
+**Live application:** [https://review-sentiment-msdjshan.azurewebsites.net](https://review-sentiment-msdjshan.azurewebsites.net)
+
 End-to-end AI application that classifies e-commerce and food-delivery customer reviews as **positive** or **negative**. It includes the **Signal** web UI, a JSON API, a Docker image, and a live Azure App Service deployment.
 
-**Public repository:** https://github.com/DonShan/customer-review-sentiment  
-**Live app:** https://review-sentiment-msdjshan.azurewebsites.net/
+**Public repository:** https://github.com/DonShan/customer-review-sentiment
 
 | Link | URL |
 |------|-----|
-| Web UI (Signal) | https://review-sentiment-msdjshan.azurewebsites.net/ |
+| Web UI (Signal) | https://review-sentiment-msdjshan.azurewebsites.net |
 | Swagger API docs | https://review-sentiment-msdjshan.azurewebsites.net/docs |
 | Health check | https://review-sentiment-msdjshan.azurewebsites.net/health |
 | Sample dataset | https://review-sentiment-msdjshan.azurewebsites.net/sample-data |
